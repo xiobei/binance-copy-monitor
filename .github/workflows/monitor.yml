@@ -1,0 +1,31 @@
+name: monitor-trades
+
+# 备份用的定时检查:最快约 5-10 分钟一次,可能延迟,不适合抢名额。
+# 注意:GitHub 的服务器多在美国,币安可能拒绝访问。若运行失败("没读到记录"),说明被限制了。
+on:
+  # 填好 Secrets 后,取消下面两行的注释即可启用定时运行(先用 workflow_dispatch 手动跑一次验证)
+  # schedule:
+  #   - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt && python -m playwright install --with-deps chromium
+      - uses: actions/cache@v4
+        with:
+          path: seen_trades.json
+          key: seen-${{ github.run_id }}
+          restore-keys: seen-
+      - run: python monitor_trades.py --url "$TRADER_URL" --check-once
+        env:
+          TRADER_URL: ${{ secrets.TRADER_URL }}
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          HEARTBEAT_URL: ${{ secrets.HEARTBEAT_URL }}
