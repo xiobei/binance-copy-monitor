@@ -89,7 +89,9 @@ def tg_send(cfg, text: str) -> bool:
 
 
 def push(topic: str, title: str, message: str, priority: int = 5):
-    """优先用 Telegram 推送;没配置 Telegram 时用 ntfy.sh。"""
+    """优先用 Telegram 推送;没配置 Telegram 时用 ntfy.sh。
+    环境变量 PUSH_PREFIX 会加在标题前(云端备份用它标明来源,本机不设置则无前缀)。"""
+    title = os.environ.get("PUSH_PREFIX", "") + title
     cfg = tg_load()
     if cfg:
         if tg_send(cfg, f"{title}\n{message}"):
