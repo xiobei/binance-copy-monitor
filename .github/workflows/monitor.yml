@@ -1,6 +1,6 @@
 name: monitor-trades
 
-# 备份用的定时检查:最快约 5-10 分钟一次,可能延迟,不适合抢名额。
+# 备份用的定时检查:最快约 5-10 分钟一次,可能延迟,仅作保底。
 # 注意:GitHub 的服务器多在美国,币安可能拒绝访问。若运行失败("没读到记录"),说明被限制了。
 on:
   # 填好 Secrets 后,取消下面两行的注释即可启用定时运行(先用 workflow_dispatch 手动跑一次验证)
@@ -28,4 +28,5 @@ jobs:
           TRADER_URL: ${{ secrets.TRADER_URL }}
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          PUSH_PREFIX: "[GitHub备份] "
           HEARTBEAT_URL: ${{ secrets.HEARTBEAT_URL }}
