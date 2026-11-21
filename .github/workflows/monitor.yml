@@ -1,29 +1,32 @@
 name: monitor-trades
 
-# 备份用的定时检查:最快约 5-10 分钟一次,可能延迟,仅作保底。
-# 注意:GitHub 的服务器多在美国,币安可能拒绝访问。若运行失败("没读到记录"),说明被限制了。
+# 云端备份:一个任务连续跑约 5 小时 40 分,期间每 5 秒左右查一次币安公开接口,有新记录立刻推送。
+# 每小时触发一次新任务排队,上一个结束时下一个立刻接上(并发组保证同一时间只跑一个,不会重复推送)。
+# 注意:GitHub 的服务器多在美国,币安可能拒绝访问。若运行失败,说明被限制了。
 on:
-  # 每 5 分钟检查一次(GitHub 允许的最短间隔,实际可能有延迟)
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "7 * * * *"
   workflow_dispatch:
 
+concurrency:
+  group: monitor
+  cancel-in-progress: false
+
 jobs:
-  check:
+  watch:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -r requirements.txt && python -m playwright install --with-deps chromium
       - uses: actions/cache@v4
         with:
-          path: seen_trades.json
-          key: seen-${{ github.run_id }}
-          restore-keys: seen-
-      - run: python monitor_trades.py --url "$TRADER_URL" --check-once
+          path: seen_orders.json
+          key: seen2-${{ github.run_id }}
+          restore-keys: seen2-
+      - run: python monitor_trades.py --url "$TRADER_URL" --mode api --interval 5 --duration 20400 --lookback 10
         env:
           TRADER_URL: ${{ secrets.TRADER_URL }}
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
