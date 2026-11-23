@@ -23,7 +23,7 @@ jobs:
           python-version: "3.12"
       - uses: actions/cache@v4
         with:
-          path: seen_orders.json
+          path: seen_orders*.json
           key: seen2-${{ github.run_id }}
           restore-keys: seen2-
       - run: python monitor_trades.py --url "$TRADER_URL" --mode api --interval 5 --duration 20400 --lookback 10
@@ -33,3 +33,4 @@ jobs:
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
           PUSH_PREFIX: "[GitHub备份] "
           HEARTBEAT_URL: ${{ secrets.HEARTBEAT_URL }}
+          TRADERS_JSON: ${{ secrets.TRADERS_JSON }}
